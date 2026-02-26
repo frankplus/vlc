@@ -60,6 +60,7 @@ GPGERROR_CONF := \
 
 .gpg-error: libgpg-error
 	$(RECONF)
+	cd $< && sed -i.bak 's/!!pthread_cancel/1/g' src/posix-lock.c
 	cd $< && $(HOSTVARS) ./configure $(HOSTCONF) $(GPGERROR_CONF)
 	# pre_mkheader_cmds would delete our lock-obj-pub-native.h
 	$(MAKE) -C $< pre_mkheader_cmds=true install

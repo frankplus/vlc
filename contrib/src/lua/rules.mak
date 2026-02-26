@@ -74,7 +74,7 @@ endif
 	$(MOVE)
 
 .lua: lua
-	$(HOSTVARS_PIC) $(MAKE) -C $< $(LUA_TARGET)
+	$(HOSTVARS_PIC) $(MAKE) -C $< $(LUA_TARGET) MYLDFLAGS="$(LDFLAGS)"
 ifdef HAVE_WIN32
 	$(HOSTVARS) $(MAKE) -C $< -C src liblua.a
 endif

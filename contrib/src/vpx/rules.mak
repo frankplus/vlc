@@ -44,6 +44,10 @@ endif
 
 ifdef HAVE_CROSS_COMPILE
 VPX_CROSS := $(HOST)-
+ifneq ($(findstring ohos,$(HOST)),)
+VPX_CROSS :=
+VPX_HOSTVARS = $(HOSTVARS)
+endif
 else
 VPX_CROSS :=
 endif

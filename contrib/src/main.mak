@@ -316,6 +316,7 @@ endif
 HOSTTOOLS := \
 	CC="$(CC)" CXX="$(CXX)" LD="$(LD)" \
 	AR="$(AR)" CCAS="$(CCAS)" RANLIB="$(RANLIB)" STRIP="$(STRIP)" \
+	STRINGS="$(STRINGS)" NM="$(NM)" OBJDUMP="$(OBJDUMP)" \
 	PATH="$(PREFIX)/bin:$(PATH)" \
 	PKG_CONFIG="$(PKG_CONFIG)"
 
@@ -410,6 +411,7 @@ AUTOMAKE_DATA_DIRS=$(foreach n,$(foreach n,$(subst :, ,$(shell echo $$PATH)),$(a
 UPDATE_AUTOCONFIG = for dir in $(AUTOMAKE_DATA_DIRS); do \
 		if test -f "$${dir}/config.sub" -a -f "$${dir}/config.guess"; then \
 			cp "$${dir}/config.sub" "$${dir}/config.guess" $(UNPACK_DIR); \
+			sed -i.bak -e 's/android\*/android* | ohos*/g' -e 's/linux-gnu\*/linux-gnu* | linux-ohos*/g' $(UNPACK_DIR)/config.sub; \
 			break; \
 		fi; \
 	done
@@ -419,8 +421,11 @@ AUTORECONF = AUTOPOINT=true GTKDOCIZE=true autoreconf
 else
 AUTORECONF = GTKDOCIZE=true autoreconf
 endif
-RECONF = mkdir -p -- $(PREFIX)/share/aclocal && \
-	cd $< && $(AUTORECONF) -fiv $(ACLOCAL_AMFLAGS)
+RECONF = mkdir -p -- $(PREFIX)/share/aclocal && cd $< && \
+	autoreconf_func() { \
+		$(AUTORECONF) -fiv $(ACLOCAL_AMFLAGS) "$$@" && \
+		find . -name "config.sub" -exec sed -i.bak -e 's/android\*/android* | ohos*/g' -e 's/linux-gnu\*/linux-gnu* | linux-ohos*/g' {} +; \
+	}; autoreconf_func
 
 BUILD_DIR = $</_build
 BUILD_SRC := ..

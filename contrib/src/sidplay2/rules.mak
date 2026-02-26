@@ -39,9 +39,9 @@ sidplay-libs: sidplay-libs-$(SID_VERSION).tar.gz .sum-sidplay2
 	for d in . libsidplay resid builders/resid-builder \
 			builders/hardsid-builder libsidutils ; \
 	do \
-		(cd $</$$d && $(AUTORECONF) -fiv -I unix $(ACLOCAL_AMFLAGS)) || exit $$? ; \
+		(cd $</$$d && $(AUTORECONF) -fiv -I unix $(ACLOCAL_AMFLAGS) && find . -name "config.sub" -exec sed -i.bak -e 's/android\*/android* | ohos*/g' -e 's/linux-gnu\*/linux-gnu* | linux-ohos*/g' {} +) || exit $$? ; \
 	done
-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
+	cd $< && $(HOSTVARS) CXXFLAGS="$(CXXFLAGS) -Wno-c++11-narrowing" ./configure $(HOSTCONF)
 	$(MAKE) -C $< install
 	cp -- $(PREFIX)/lib/sidplay/builders/* "$(PREFIX)/lib/"
 	touch $@

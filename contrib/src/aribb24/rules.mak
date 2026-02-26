@@ -28,7 +28,8 @@ DEPS_aribb24 = png
 .aribb24: aribb24
 	$(REQUIRE_GPL)
 	$(REQUIRE_GNUV3)
-	cd $< && $(SHELL) ./bootstrap
+	cd $< && mkdir -p m4
+	$(RECONF)
 	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
 	$(MAKE) -C $< && $(MAKE) -C $< install
 	touch $@
