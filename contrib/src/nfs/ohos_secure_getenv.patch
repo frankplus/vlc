@@ -1,0 +1,29 @@
+--- a/tls/handshake.c
++++ b/tls/handshake.c
+@@ -31,7 +31,7 @@
+ #include <errno.h>
+ #include <sys/types.h>
+ #include <netinet/tcp.h>
+-#include <linux/in.h>
++#include <netinet/in.h>
+ 
+ #ifdef HAVE_SYS_UTSNAME_H
+ #include <sys/utsname.h>
+@@ -45,7 +45,7 @@
+ #include "tls-private.h"
+ 
+ #ifdef _GNU_SOURCE
+-#define GETENV secure_getenv
++#define GETENV getenv
+ #else
+ #define GETENV getenv
+ #endif
+@@ -95,7 +95,7 @@
+ 		return false;
+ 	}
+ 
+-	if (strverscmp(utsname.release, min_version) < 0) {
++	if (strcmp(utsname.release, min_version) < 0) {
+ 		TLS_LOG(1, "Kernel version %s less than min version known to work %s",
+ 				utsname.release, min_version);
+ 		return false;

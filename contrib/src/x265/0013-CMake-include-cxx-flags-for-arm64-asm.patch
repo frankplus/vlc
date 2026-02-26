@@ -1,0 +1,11 @@
+--- a/source/CMakeLists.txt
++++ b/source/CMakeLists.txt
+@@ -746,6 +746,8 @@
+         if(APPLE)
+             set(ARM_ARGS ${ARM_ARGS} -arch ${CMAKE_OSX_ARCHITECTURES})
+         endif()
++        separate_arguments(CXX_FLAGS UNIX_COMMAND "${CMAKE_CXX_FLAGS}")
++        list(APPEND ARM_ARGS ${CXX_FLAGS})
+         foreach(ASM ${ARM_ASMS})
+             set(ASM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/common/aarch64/${ASM})
+             list(APPEND ASM_SRCS ${ASM_SRC})
