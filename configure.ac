@@ -111,6 +111,11 @@ case "${host_os}" in
   "")
     SYS=unknown
     ;;
+  linux-ohos*)
+    SYS=linux
+    HAVE_OHOS="1"
+    AC_DEFINE([HAVE_OHOS], [1], [Define to 1 if targeting OpenHarmony OS])
+    ;;
   linux*)
     SYS=linux
     ;;
@@ -446,6 +451,7 @@ AS_IF([test "$SYS" = linux],[
     ])
 ])
 AM_CONDITIONAL(HAVE_ANDROID, test "${HAVE_ANDROID}" = "1")
+AM_CONDITIONAL(HAVE_OHOS, test "${HAVE_OHOS}" = "1")
 
 dnl Tizen (minimum SDK version: 2.3)
 AS_IF([test "$SYS" = linux],[
