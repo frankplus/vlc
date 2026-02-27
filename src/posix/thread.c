@@ -583,20 +583,27 @@ int vlc_set_priority (vlc_thread_t th, int priority)
 
 void vlc_cancel(vlc_thread_t th)
 {
+#ifndef __OHOS__
     pthread_cancel(th.handle);
+#else
+    (void)th;
+#endif
 }
 
 int vlc_savecancel (void)
 {
-    int state;
+    int state = 0;
+#ifndef __OHOS__
     int val = pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &state);
 
     VLC_THREAD_ASSERT ("saving cancellation");
+#endif
     return state;
 }
 
 void vlc_restorecancel (int state)
 {
+#ifndef __OHOS__
 #ifndef NDEBUG
     int oldstate, val;
 
@@ -610,11 +617,16 @@ void vlc_restorecancel (int state)
 #else
     pthread_setcancelstate (state, NULL);
 #endif
+#else
+    (void)state;
+#endif
 }
 
 void vlc_testcancel (void)
 {
+#ifndef __OHOS__
     pthread_testcancel ();
+#endif
 }
 
 void vlc_control_cancel (int cmd, ...)

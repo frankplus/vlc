@@ -135,7 +135,7 @@ int vlc_memfd (void)
 int vlc_close (int fd)
 {
     int ret;
-#ifdef POSIX_CLOSE_RESTART
+#if defined(POSIX_CLOSE_RESTART) && !defined(__OHOS__)
     ret = posix_close(fd, 0);
 #else
     ret = close(fd);
