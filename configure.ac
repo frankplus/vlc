@@ -3166,7 +3166,11 @@ PKG_CHECK_MODULES([GL], [gl], [
     [int t0 = GL_TEXTURE0;]])
   ], [
     GL_CFLAGS=""
-    have_gl="yes"
+    AS_IF([test "${HAVE_OHOS}" = "1"], [
+      have_gl="no"
+    ], [
+      have_gl="yes"
+    ])
     AS_IF([test "${SYS}" != "mingw32"], [
       GL_LIBS="-lGL"
     ], [
