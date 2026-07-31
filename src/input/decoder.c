@@ -130,6 +130,12 @@ struct decoder_owner_sys_t
     atomic_bool drained;
     bool b_idle;
 
+    /* Set by input_DecoderDelete() to make DecoderThread() return. Platforms
+     * without pthread cancellation (OpenHarmony, Android) cannot rely on
+     * vlc_cancel() to unblock the thread, so it is asked to leave explicitly.
+     * Protected by the fifo lock. */
+    bool b_exit;
+
     /* CC */
 #define MAX_CC_DECODERS 64 /* The es_out only creates one type of es */
     struct
@@ -1548,7 +1554,9 @@ static void *DecoderThread( void *p_data )
     vlc_fifo_Lock( p_owner->p_fifo );
     vlc_fifo_CleanupPush( p_owner->p_fifo );
 
-    for( ;; )
+    /* The fifo lock is always held when (re)entering the loop, so b_exit can
+     * be read safely here. */
+    while( !p_owner->b_exit )
     {
         if( p_owner->flushing )
         {   /* Flush before/regardless of pause. We do not want to resume just
@@ -1643,7 +1651,8 @@ static void *DecoderThread( void *p_data )
         vlc_mutex_unlock( &p_owner->lock );
     }
     vlc_cleanup_pop();
-    vlc_assert_unreachable();
+    vlc_fifo_Unlock( p_owner->p_fifo );
+    return NULL;
 }
 
 /**
@@ -1705,6 +1714,7 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
     p_owner->drained = false;
     atomic_init( &p_owner->reload, RELOAD_NO_REQUEST );
     p_owner->b_idle = false;
+    p_owner->b_exit = false;
 
     es_format_Init( &p_owner->fmt, fmt->i_cat, 0 );
 
@@ -1991,9 +2001,15 @@ void input_DecoderDelete( decoder_t *p_dec )
     vlc_cancel( p_owner->thread );
 
     vlc_fifo_Lock( p_owner->p_fifo );
+    /* Ask DecoderThread to leave its main loop. vlc_cancel() above is a no-op
+     * on platforms without pthread cancellation, so the thread would otherwise
+     * sleep forever in vlc_fifo_Wait() and vlc_join() would never return. */
+    p_owner->b_exit = true;
     /* Signal DecoderTimedWait */
     p_owner->flushing = true;
     vlc_cond_signal( &p_owner->wait_timed );
+    /* Wake up DecoderThread if it is waiting for a block to decode */
+    vlc_fifo_Signal( p_owner->p_fifo );
     vlc_fifo_Unlock( p_owner->p_fifo );
 
     /* Make sure we aren't waiting/decoding anymore */

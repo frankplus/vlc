@@ -640,7 +640,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
 #if defined (_WIN32) || defined (__OS2__)
     var_Create (mp, "drawable-hwnd", VLC_VAR_INTEGER);
 #endif
-#ifdef __APPLE__
+#if defined (__APPLE__) || defined (__OHOS__)
+    /* OpenHarmony reuses the nsobject drawable to carry an OHNativeWindow*. */
     var_Create (mp, "drawable-nsobject", VLC_VAR_ADDRESS);
 #endif
 #ifdef __ANDROID__
@@ -1144,6 +1145,11 @@ void libvlc_media_player_set_nsobject( libvlc_media_player_t *p_mi,
     var_SetString (p_mi, "vout", "");
     var_SetString (p_mi, "window", "");
     var_SetAddress (p_mi, "drawable-nsobject", drawable);
+#elif defined (__OHOS__)
+    /* The OpenHarmony vout picks this up with var_InheritAddress(). Unlike the
+     * Apple path, do not reset "vout"/"window": the caller selects OHOSVout
+     * explicitly. */
+    var_SetAddress (p_mi, "drawable-nsobject", drawable);
 #else
     (void)drawable;
     libvlc_printerr ("can't set nsobject: APPLE build required");
@@ -1159,7 +1165,7 @@ void libvlc_media_player_set_nsobject( libvlc_media_player_t *p_mi,
 void * libvlc_media_player_get_nsobject( libvlc_media_player_t *p_mi )
 {
     assert (p_mi != NULL);
-#ifdef __APPLE__
+#if defined (__APPLE__) || defined (__OHOS__)
     return var_GetAddress (p_mi, "drawable-nsobject");
 #else
     (void) p_mi;
